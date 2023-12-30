@@ -6,8 +6,8 @@ import time
 # データベースに接続するための設定
 conn = psycopg2.connect(
     dbname="ds_pro", 
-    user="anaiyoshikazu", 
-    password="yoshi318", 
+    user="testuser", 
+    password="test000", 
     host="localhost",
     port='5432'
 )
@@ -32,12 +32,16 @@ victim_20 = soup.find('p', id='crime-trend-Victim Age-number-20-29-value')
 victim_30 = soup.find('p', id='crime-trend-Victim Age-number-30-39-value')
 victim_40 = soup.find('p', id='crime-trend-Victim Age-number-10-19-value')
 victim_50 = soup.find('p', id='crime-trend-Victim Age-number-50-59-value')
-# 犯行手段（武器や素手など）
+# 犯行に用いた武器等（素手も含む）
 personal_weapons = soup.find('p', id='crime-trend-Type of weapon involved by offense-number-Personal Weapons-value')
 handgun = soup.find('p', id='crime-trend-Type of weapon involved by offense-number-Handgun-value')
 knife_cutting_instrument = soup.find('p', id='crime-trend-Type of weapon involved by offense-number-Knife/Cutting Instrument-value')
 firearm = soup.find('p', id='crime-trend-Type of weapon involved by offense-number-Firearm-value')
 none = soup.find('p', id='crime-trend-Type of weapon involved by offense-number-None-value')
+# トータルのデータ
+offender_sum_total = soup.find('p', id='crime-trend-Offender Age-number-Total')
+victim_sum_total = soup.find('p', id='crime-trend-Victim Age-number-Total')
+type_of_weapons_sum_total = soup.find('p', id='crime-trend-Type of weapon involved by offense-number-Total')
 
 
 
@@ -45,7 +49,7 @@ none = soup.find('p', id='crime-trend-Type of weapon involved by offense-number-
 def convert_to_int(string):
     return int(string.replace(",", ""))
 
-if all([offender_20, offender_30, offender_10, offender_40, unknown, victim_10, victim_20, victim_30, victim_40, victim_50, personal_weapons, handgun, knife_cutting_instrument, firearm, none]):
+if all([offender_20, offender_30, offender_10, offender_40, unknown, victim_10, victim_20, victim_30, victim_40, victim_50, personal_weapons, handgun, knife_cutting_instrument, firearm, none, offender_sum_total, victim_sum_total, type_of_weapons_sum_total]):
     offender_10_19 = convert_to_int(offender_10.text.strip())
     offender_20_29 = convert_to_int(offender_20.text.strip())
     offender_30_39 = convert_to_int(offender_30.text.strip())
@@ -61,11 +65,13 @@ if all([offender_20, offender_30, offender_10, offender_40, unknown, victim_10, 
     knife_cutting_instrument = convert_to_int(knife_cutting_instrument.text.strip())
     firearm = convert_to_int(firearm.text.strip())
     none = convert_to_int(none.text.strip())
-    print(f'10代 : {offender_10_19} | 20代 : {offender_20_29} | 30代 : {offender_30_39} | 40代 : {offender_40} | 不明 : {unknown}') 
+    offender_sum_total = convert_to_int(offender_sum_total.text.strip())
+    victim_sum_total = convert_to_int(victim_sum_total.text.strip())
+    type_of_weapons_sum_total = convert_to_int(type_of_weapons_sum_total.text.strip())
 
     # データベースにデータを挿入
-    cur.execute("INSERT INTO crime (offender_10, offender_20, offender_30, offender_40, offender_unknown, victim_10, victim_20, victim_30, victim_40, victim_50, personal_weapons, handgun, knife_cutting_instrument, firearm, none) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
-                (offender_10_19, offender_20_29, offender_30_39, offender_40_49, unknown, victim_10, victim_20, victim_30, victim_40, victim_50, personal_weapons, handgun, knife_cutting_instrument, firearm, none))
+    cur.execute("INSERT INTO crime (offender_10, offender_20, offender_30, offender_40, offender_unknown, victim_10, victim_20, victim_30, victim_40, victim_50, personal_weapons, handgun, knife_cutting_instrument, firearm, none, offender_sum_total, victim_sum_total, type_of_weapons_sum_total) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+                (offender_10_19, offender_20_29, offender_30_39, offender_40_49, unknown, victim_10, victim_20, victim_30, victim_40, victim_50, personal_weapons, handgun, knife_cutting_instrument, firearm, none, offender_sum_total, victim_sum_total, type_of_weapons_sum_total))
 
     # 変更をコミット
     conn.commit()
